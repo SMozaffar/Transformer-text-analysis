@@ -38,6 +38,7 @@ class TransformerModel(nn.Module):
     def __init__(self, vocab_size, d_model, n_heads, d_ff, n_layers, num_classes_sentiment, num_classes_classification):
         super(TransformerModel, self).__init__()
         self.embedding = nn.Embedding(vocab_size, d_model)
+        self.positional_encoding = self._generate_positional_encoding(d_model, max_length=500)
         self.transformer_blocks = nn.ModuleList(
             [TransformerBlock(d_model, n_heads, d_ff) for _ in range(n_layers)]
         )
@@ -45,14 +46,22 @@ class TransformerModel(nn.Module):
         self.classification_head = nn.Linear(d_model, num_classes_classification)
 
     def forward(self, x, task="sentiment"):
-        x = self.embedding(x)
+        x = self.embedding(x) + self.positional_encoding[:x.size(1), :].to(x.device)
         for transformer_block in self.transformer_blocks:
             x = transformer_block(x)
         
-        # Average pooling
-        x = x.mean(dim=1)
+        # Use the output corresponding to the [CLS] token
+        cls_output = x[:, 0, :]
 
         if task == "sentiment":
-            return self.sentiment_head(x)
+            return self.sentiment_head(cls_output)
         elif task == "classification":
-            return self.classification_head(x)
+            return self.classification_head(cls_output)
+
+    def _generate_positional_encoding(self, d_model, max_length):
+        pe = torch.zeros(max_length, d_model)
+        position = torch.arange(0, max_length).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * -(np.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        return pe

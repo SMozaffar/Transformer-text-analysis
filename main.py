@@ -11,13 +11,13 @@ from train_model import train_model, evaluate_model, load_data, evaluate_bert
 def main():
     # Configuration
     device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-    d_model = 64
+    d_model = 256
     n_heads = 8
-    d_ff = 256
+    d_ff = 512
     n_layers = 4
     num_classes_sentiment = 2  # Positive/Negative
     num_classes_classification = 4  # AG News classes
-    batch_size = 128
+    batch_size = 32
     num_epochs = 10
     max_length = 50
 
@@ -41,20 +41,22 @@ def main():
     agnews_test_loader = DataLoader(agnews_test_dataset, batch_size=batch_size, shuffle=False)
 
     # Initialize Model
-    vocab_size = len(tokenizer.vocab) + 2  # Including padding and unknown tokens
+    vocab_size = len(tokenizer.vocab)   # Including padding and unknown tokens (included in tokenizer class)
     model = TransformerModel(vocab_size, d_model, n_heads, d_ff, n_layers, num_classes_sentiment, num_classes_classification)
     model.to(device)
 
     # Loss and Optimizer
     sentiment_criterion = nn.CrossEntropyLoss()
     classification_criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1)
 
     # Training Loop
     for epoch in range(num_epochs):
         sentiment_loss = train_model(model, imdb_train_loader, "sentiment", sentiment_criterion, optimizer, device)
         classification_loss = train_model(model, agnews_train_loader, "classification", classification_criterion, optimizer, device)
         print(f"Epoch {epoch+1}/{num_epochs}, Sentiment Loss: {sentiment_loss:.4f}, Classification Loss: {classification_loss:.4f}")
+        scheduler.step()
 
     # Evaluation
     sentiment_accuracy, sentiment_test_loss = evaluate_model(model, imdb_test_loader, "sentiment", sentiment_criterion, device)
