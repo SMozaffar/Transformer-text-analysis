@@ -12,20 +12,12 @@ This project is built on top of two popular datasets:
 
 The project serves as a practical demonstration of how to construct and train a Transformer model from the ground up, offering insights into the inner workings of the model, such as custom tokenization, data handling, and explicit label mapping. Additionally, the performance of the custom Transformer model is compared against a pretrained BERT model to evaluate how well it stacks up against a widely recognized state-of-the-art model.
 
-## Background
-
-Transformers have revolutionized NLP by enabling models to capture long-range dependencies and contextual information more effectively than traditional RNN-based architectures. This project offers a hands-on understanding of Transformers by building one from scratch and applying it to real-world tasks like sentiment analysis and text classification.
-
 ## Features
 
 - **Custom Transformer Implementation**: The model is built from scratch, without relying on pre-built Transformer libraries, offering a deeper understanding of the architecture.
 - **Dual-Task Learning**: Capable of performing both sentiment analysis and text classification.
 - **Custom Tokenization**: Manual tokenization and padding to demonstrate data preprocessing steps.
 - **Model Comparison**: Performance evaluation and comparison with a pretrained BERT model.
-
-## Results and Discussion
-
-This section discusses the performance of the custom Transformer model compared to a pretrained BERT model. Key metrics such as accuracy and loss are evaluated on both the IMDB and AGNews datasets. The comparison highlights the strengths and weaknesses of building a model from scratch versus using a pretrained model that has been fine-tuned on large datasets.
 
 ## Potential Improvements
 
